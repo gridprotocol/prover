@@ -48,6 +48,12 @@ void pre_sha256()
     checkCudaErrors(cudaMemcpyToSymbol(dev_k, host_k, sizeof(host_k), 0, cudaMemcpyHostToDevice));
 }
 
+// difficult: the number of pre-zeros
+// index: GPU index, start from 0
+// data: salt, a random value from validator, including node id in it
+// len: length of data
+// result: the answer of sha256
+// n: sha256 run times
 void runSha256(int diffcult, int index, BYTE *data, size_t len, long long *result, long long n)
 {
     int blockSize = 16;

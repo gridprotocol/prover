@@ -76,12 +76,14 @@ func (p *GRIDProver) Start(ctx context.Context) {
 			continue
 		}
 
+		// generate proof
 		res, err := p.GenerateProof(ctx, rnd)
 		if err != nil {
 			logger.Error(err.Error())
 			continue
 		}
 
+		// submit proof to validator
 		success, err := p.ProveToValidator(ctx, res)
 		if err != nil {
 			logger.Error(err.Error())
@@ -111,6 +113,7 @@ func (p *GRIDProver) CalculateWatingTime() (time.Duration, int64) {
 	now := time.Now().Unix()
 	duration := now - p.last
 	over := duration % challengeCycleSeconds
+
 	var waitingSeconds int64 = 0
 	if over < int64(p.prepareInterval.Seconds()) {
 		waitingSeconds = int64(p.prepareInterval.Seconds()) - over
@@ -125,10 +128,12 @@ func (p *GRIDProver) CalculateWatingTime() (time.Duration, int64) {
 	return time.Duration(waitingSeconds) * time.Second, next
 }
 
+// generate a proof with a random value
 func (p *GRIDProver) GenerateProof(ctx context.Context, rnd [32]byte) (int64, error) {
 	return GeneratePOW(p.nodeID, rnd[:], p.diffcult)
 }
 
+// submit proof to validator
 func (p *GRIDProver) ProveToValidator(ctx context.Context, result int64) (bool, error) {
 	err := p.SubmitV1Proof(ctx, types.Proof{
 		NodeID: p.nodeID,
