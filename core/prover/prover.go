@@ -60,6 +60,9 @@ func NewGRIDProver(chain string, validatorUrl string, sk *ecdsa.PrivateKey, id i
 
 func (p *GRIDProver) Start(ctx context.Context) {
 	for {
+		// 1 sec for each loop
+		time.Sleep(1 * time.Second)
+
 		wait, nextTime := p.CalculateWatingTime()
 		select {
 		case <-ctx.Done():
