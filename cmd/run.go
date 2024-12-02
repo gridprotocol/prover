@@ -16,13 +16,13 @@ var ProverCmd = &cli.Command{
 	Name:  "prover",
 	Usage: "grid prover node",
 	Subcommands: []*cli.Command{
-		proverNodeTestCmd,
+		runCmd,
 		// challengerNodeStopCmd,
 		// queryProfitsCmd,
 	},
 }
 
-var proverNodeTestCmd = &cli.Command{
+var runCmd = &cli.Command{
 	Name:  "run",
 	Usage: "run grid prover node",
 	Flags: []cli.Flag{
@@ -44,7 +44,7 @@ var proverNodeTestCmd = &cli.Command{
 		},
 		&cli.StringFlag{
 			Name:  "ip",
-			Usage: "input meeda store node's ip address",
+			Usage: "input validator node's ip address",
 			Value: "http://localhost:8081",
 		},
 	},
