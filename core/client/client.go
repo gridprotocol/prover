@@ -140,7 +140,7 @@ type cntResult struct {
 // get the order count of a provider from validator
 func (c *Client) GetV1OrderCount(ctx context.Context, provider string) (int64, error) {
 	//var url = c.baseUrl + "/provider/:address/count"
-	var url = c.baseUrl + "/provider/:" + "address/count"
+	var url = c.baseUrl + "v1/provider/:" + "address/count"
 
 	fmt.Println("url: ", url)
 
@@ -155,7 +155,7 @@ func (c *Client) GetV1OrderCount(ctx context.Context, provider string) (int64, e
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return 0, xerrors.Errorf("Failed to get rnd, status [%d]", res.StatusCode)
+		return 0, xerrors.Errorf("Failed to get order count, status [%d]", res.StatusCode)
 	}
 
 	// read response body
