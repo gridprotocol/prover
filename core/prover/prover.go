@@ -27,7 +27,7 @@ type GRIDProver struct {
 	done  chan struct{}
 	doned bool
 
-	client.GRIDClient
+	client.Client
 }
 
 func NewGRIDProver(chain string, validatorUrl string, sk *ecdsa.PrivateKey, id int64) (*GRIDProver, error) {
@@ -52,7 +52,8 @@ func NewGRIDProver(chain string, validatorUrl string, sk *ecdsa.PrivateKey, id i
 		done:  make(chan struct{}),
 		doned: false,
 
-		GRIDClient: *client.NewGRIDClient(validatorUrl),
+		// new gridClient to communicate with validator
+		Client: *client.NewClient(validatorUrl),
 	}, nil
 }
 

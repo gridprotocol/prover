@@ -12,12 +12,13 @@ import (
 	"golang.org/x/xerrors"
 )
 
-type GRIDClient struct {
+type Client struct {
 	baseUrl string
 }
 
-func NewGRIDClient(url string) *GRIDClient {
-	return &GRIDClient{
+// client used to communicate with validator
+func NewClient(url string) *Client {
+	return &Client{
 		baseUrl: url,
 	}
 }
@@ -29,7 +30,7 @@ type SettingInfo struct {
 	WaitInterval    int64
 }
 
-func (c *GRIDClient) GetV1SettingInfo(ctx context.Context) (SettingInfo, error) {
+func (c *Client) GetV1SettingInfo(ctx context.Context) (SettingInfo, error) {
 	var url = c.baseUrl + "/v1/rnd"
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -63,7 +64,7 @@ type rndResult struct {
 	Rnd string
 }
 
-func (c *GRIDClient) GetV1ChanllengeInfo(ctx context.Context) ([32]byte, error) {
+func (c *Client) GetV1ChanllengeInfo(ctx context.Context) ([32]byte, error) {
 	var url = c.baseUrl + "/v1/rnd"
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -100,7 +101,7 @@ func (c *GRIDClient) GetV1ChanllengeInfo(ctx context.Context) ([32]byte, error) 
 	return rnd, nil
 }
 
-func (c *GRIDClient) SubmitV1Proof(ctx context.Context, proof types.Proof) error {
+func (c *Client) SubmitV1Proof(ctx context.Context, proof types.Proof) error {
 	var url = c.baseUrl + "/v1/proof"
 	payload := make(map[string]interface{})
 
@@ -127,4 +128,42 @@ func (c *GRIDClient) SubmitV1Proof(ctx context.Context, proof types.Proof) error
 	}
 
 	return nil
+}
+
+// get the order count of a provider from validator
+func (c *Client) GetV1OrderCount(ctx context.Context) ([32]byte, error) {
+	var url = c.baseUrl + "/v1/rnd"
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return [32]byte{}, err
+	}
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return [32]byte{}, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return [32]byte{}, xerrors.Errorf("Failed to get rnd, status [%d]", res.StatusCode)
+	}
+	body, err := io.ReadAll(res.Body)
+	defer res.Body.Close()
+	if err != nil {
+		return [32]byte{}, err
+	}
+
+	var rndRes rndResult
+	err = json.Unmarshal(body, &rndRes)
+	if err != nil {
+		return [32]byte{}, err
+	}
+
+	rndBytes, err := hex.DecodeString(rndRes.Rnd)
+	if err != nil {
+		return [32]byte{}, err
+	}
+
+	var rnd [32]byte
+	copy(rnd[:], rndBytes)
+	return rnd, nil
 }
