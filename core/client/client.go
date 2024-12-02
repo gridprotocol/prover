@@ -140,7 +140,7 @@ type cntResult struct {
 // get the order count of a provider from validator
 func (c *Client) GetV1OrderCount(ctx context.Context, provider string) (int64, error) {
 	//var url = c.baseUrl + "/provider/:address/count"
-	var url = c.baseUrl + "v1/provider/:" + "address/count"
+	var url = c.baseUrl + "/v1/provider/:" + "address/count"
 
 	fmt.Println("url: ", url)
 
