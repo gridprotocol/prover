@@ -3,6 +3,7 @@ package prover
 import (
 	"context"
 	"crypto/ecdsa"
+	"fmt"
 	"time"
 
 	"grid-prover/core/client"
@@ -70,8 +71,16 @@ func (p *GRIDProver) Start(ctx context.Context) {
 		case <-time.After(wait):
 		}
 
+		cnt, err := p.GetV1OrderCount(ctx, "0xEf95c72C836605203F7f66788E450Af2a4141957")
+		if err != nil {
+			logger.Error(err.Error())
+			continue
+		}
+
+		fmt.Println("order count for provider: ", cnt)
+
 		// get rnd from Validator/Contract
-		rnd, err := p.GetV1ChanllengeInfo(ctx)
+		rnd, err := p.GetRND(ctx)
 		if err != nil {
 			logger.Error(err.Error())
 			continue
@@ -136,7 +145,7 @@ func (p *GRIDProver) GenerateProof(ctx context.Context, rnd [32]byte) (int64, er
 
 // submit proof to validator
 func (p *GRIDProver) ProveToValidator(ctx context.Context, result int64) (bool, error) {
-	err := p.SubmitV1Proof(ctx, types.Proof{
+	err := p.SubmitProof(ctx, types.Proof{
 		NodeID: p.nodeID,
 		Nonce:  result,
 	})

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"grid-prover/core/types"
 	"io"
 	"net/http"
@@ -64,7 +65,7 @@ type rndResult struct {
 	Rnd string
 }
 
-func (c *Client) GetV1ChanllengeInfo(ctx context.Context) ([32]byte, error) {
+func (c *Client) GetRND(ctx context.Context) ([32]byte, error) {
 	var url = c.baseUrl + "/v1/rnd"
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -101,10 +102,11 @@ func (c *Client) GetV1ChanllengeInfo(ctx context.Context) ([32]byte, error) {
 	return rnd, nil
 }
 
-func (c *Client) SubmitV1Proof(ctx context.Context, proof types.Proof) error {
+// post proof to validator
+func (c *Client) SubmitProof(ctx context.Context, proof types.Proof) error {
 	var url = c.baseUrl + "/v1/proof"
-	payload := make(map[string]interface{})
 
+	payload := make(map[string]interface{})
 	payload["address"] = proof.Address
 	payload["id"] = proof.ID
 	payload["nonce"] = proof.Nonce
@@ -130,40 +132,44 @@ func (c *Client) SubmitV1Proof(ctx context.Context, proof types.Proof) error {
 	return nil
 }
 
+// result of get order count
+type cntResult struct {
+	Cnt int64
+}
+
 // get the order count of a provider from validator
-func (c *Client) GetV1OrderCount(ctx context.Context) ([32]byte, error) {
-	var url = c.baseUrl + "/v1/rnd"
+func (c *Client) GetV1OrderCount(ctx context.Context, provider string) (int64, error) {
+	//var url = c.baseUrl + "/provider/:address/count"
+	var url = c.baseUrl + "/provider/:" + "address/count"
+
+	fmt.Println("url: ", url)
+
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return [32]byte{}, err
+		return 0, err
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return [32]byte{}, err
+		return 0, err
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return [32]byte{}, xerrors.Errorf("Failed to get rnd, status [%d]", res.StatusCode)
+		return 0, xerrors.Errorf("Failed to get rnd, status [%d]", res.StatusCode)
 	}
+
+	// read response body
 	body, err := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	if err != nil {
-		return [32]byte{}, err
+		return 0, err
 	}
 
-	var rndRes rndResult
-	err = json.Unmarshal(body, &rndRes)
+	var cnt cntResult
+	err = json.Unmarshal(body, &cnt)
 	if err != nil {
-		return [32]byte{}, err
+		return 0, err
 	}
 
-	rndBytes, err := hex.DecodeString(rndRes.Rnd)
-	if err != nil {
-		return [32]byte{}, err
-	}
-
-	var rnd [32]byte
-	copy(rnd[:], rndBytes)
-	return rnd, nil
+	return cnt.Cnt, nil
 }
