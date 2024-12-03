@@ -132,15 +132,10 @@ func (c *Client) SubmitProof(ctx context.Context, proof types.Proof) error {
 	return nil
 }
 
-// result of get order count
-type cntResult struct {
-	Cnt int64
-}
-
 // get the order count of a provider from validator
 func (c *Client) GetV1OrderCount(ctx context.Context, provider string) (int64, error) {
 	//var url = c.baseUrl + "/provider/:address/count"
-	var url = c.baseUrl + "/v1/provider/" + "address" + "/count"
+	var url = c.baseUrl + "/v1/provider/" + provider + "/count"
 
 	fmt.Println("url: ", url)
 
@@ -165,11 +160,11 @@ func (c *Client) GetV1OrderCount(ctx context.Context, provider string) (int64, e
 		return 0, err
 	}
 
-	var cnt cntResult
+	var cnt int64
 	err = json.Unmarshal(body, &cnt)
 	if err != nil {
 		return 0, err
 	}
 
-	return cnt.Cnt, nil
+	return cnt, nil
 }
